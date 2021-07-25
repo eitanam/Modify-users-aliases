@@ -169,12 +169,11 @@ $global:user=$null
 #Check if the AD module is installed
 function Check_For_AD_Module ()
 {
-    Try
+    if (Get-Module -ListAvailable -Name ActiveDirectory)
     {
-        Get-ADUser -ErrorAction Stop
         search
     }
-    Catch [System.SystemException]
+    else
     {
         $MsgBoxError::Show($str021, $str001, "OK", "Error")
     }
