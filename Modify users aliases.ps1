@@ -8,10 +8,14 @@ Inital release
 Version 1.1
 Check if the AD module is installed
 
+Version 1.2
+Check if the Proxyadresses attribute is empty. In case it is, it will add SMTP address based on the UPN
+Add an option to modifr the 365 UPN to be identical to the new primary email address
+
 #>
 
 
-$str001 = "Modify users aliases ver 1.0"
+$str001 = "Modify users aliases ver 1.2"
 $str002 = "User name:"
 $str003 = "Search"
 $str004 = "User name is missing"
@@ -29,6 +33,7 @@ $str015 = "This alias already in use"
 $str016 = "Alias is missing"
 $str017 = "This alias is a primary alias"
 $str018 = "This alias is not existing"
+$str019 = "Change the UPN also on the 365"
 $str020 = "Close"
 $str021 = "The ActiveDirectory module is not installed"
 
@@ -39,7 +44,7 @@ Add-Type -AssemblyName System.Windows.Forms
 #region begin GUI{ 
 
 $Form                            = New-Object system.Windows.Forms.Form
-$Form.ClientSize                 = '600,650'
+$Form.ClientSize                 = '600,700'
 $Form.text                       = $str001
 $Form.TopMost                    = $false
 
@@ -67,12 +72,12 @@ $Search_User_Button.Add_Click({Check_For_AD_Module})
 $form.Controls.Add($Search_User_Button)
 
 $checkbox1 = new-object System.Windows.Forms.checkbox
-$checkbox1.Location = new-object System.Drawing.Size(30,90)
+$checkbox1.Location = new-object System.Drawing.Size(30,120)
 $checkbox1.Size = new-object System.Drawing.Size(250,50)
 $checkbox1.Text = $str006
 
 $HideSetButton = new-object System.Windows.Forms.Button
-$HideSetButton.Location = new-object System.Drawing.Size(340,100)
+$HideSetButton.Location = new-object System.Drawing.Size(380,130)
 $HideSetButton.Size = new-object System.Drawing.Size(100,25)
 $HideSetButton.Text = $str007
 $HideSetButton.Add_Click({HideFromGal})
@@ -81,36 +86,41 @@ $PrimaryEmailAddress                       = New-Object system.Windows.Forms.Lab
 $PrimaryEmailAddress.text                  = $str008
 $PrimaryEmailAddress.AutoSize              = $true
 $PrimaryEmailAddress.Size                  = new-object System.Drawing.Size(70,10)
-$PrimaryEmailAddress.location              = New-Object System.Drawing.Point(30,160)
+$PrimaryEmailAddress.location              = New-Object System.Drawing.Point(30,190)
 $PrimaryEmailAddress.Font                  = 'Microsoft Sans Serif,10'
 
 $PrimaryEmailAddressTextBox                = New-Object system.Windows.Forms.TextBox
 $PrimaryEmailAddressTextBox.multiline      = $false
 $PrimaryEmailAddressTextBox.Size           = new-object System.Drawing.Size(200,20)
-$PrimaryEmailAddressTextBox.location       = New-Object System.Drawing.Point(175,155)
+$PrimaryEmailAddressTextBox.location       = New-Object System.Drawing.Point(175,185)
 $PrimaryEmailAddressTextBox.Font           = 'Microsoft Sans Serif,10'
 
 $PrimaryEmailAddressButton                 = new-object System.Windows.Forms.Button
-$PrimaryEmailAddressButton.Location        = new-object System.Drawing.Size(380,155)
+$PrimaryEmailAddressButton.Location        = new-object System.Drawing.Size(380,185)
 $PrimaryEmailAddressButton.Size            = new-object System.Drawing.Size(150,25)
 $PrimaryEmailAddressButton.Text            = $str009
 $PrimaryEmailAddressButton.Add_Click({SetPrimaryEmail})
+
+$365_UPN_Button_Checkbox = new-object System.Windows.Forms.checkbox
+$365_UPN_Button_Checkbox.Location = new-object System.Drawing.Size(30,220)
+$365_UPN_Button_Checkbox.Size = new-object System.Drawing.Size(250,25)
+$365_UPN_Button_Checkbox.Text = $str019
 
 $AddAnAlias                                = New-Object system.Windows.Forms.Label
 $AddAnAlias.text                           = $str010
 $AddAnAlias.AutoSize                       = $true
 $AddAnAlias.Size                           = new-object System.Drawing.Size(70,10)
-$AddAnAlias.location                       = New-Object System.Drawing.Point(30,205)
+$AddAnAlias.location                       = New-Object System.Drawing.Point(30,255)
 $AddAnAlias.Font                           = 'Microsoft Sans Serif,10'
 
 $AddAnAliasTextBox                         = New-Object system.Windows.Forms.TextBox
 $AddAnAliasTextBox.multiline               = $false
 $AddAnAliasTextBox.Size                    = new-object System.Drawing.Size(200,20)
-$AddAnAliasTextBox.location                = New-Object System.Drawing.Point(175,200)
+$AddAnAliasTextBox.location                = New-Object System.Drawing.Point(175,250)
 $AddAnAliasTextBox.Font                    = 'Microsoft Sans Serif,10'
 
 $AddAnAliasButton                          = new-object System.Windows.Forms.Button
-$AddAnAliasButton.Location                 = new-object System.Drawing.Size(380,199)
+$AddAnAliasButton.Location                 = new-object System.Drawing.Size(380,249)
 $AddAnAliasButton.Size                     = new-object System.Drawing.Size(150,25)
 $AddAnAliasButton.Text                     = $str011
 $AddAnAliasButton.Add_Click({AddNewAlias})
@@ -119,17 +129,17 @@ $DeleteAnAlias                             = New-Object system.Windows.Forms.Lab
 $DeleteAnAlias.text                        = $str012
 $DeleteAnAlias.AutoSize                    = $true
 $DeleteAnAlias.Size                        = new-object System.Drawing.Size(70,10)
-$DeleteAnAlias.location                    = New-Object System.Drawing.Point(30,250)
+$DeleteAnAlias.location                    = New-Object System.Drawing.Point(30,300)
 $DeleteAnAlias.Font                        = 'Microsoft Sans Serif,10'
 
 $DeleteAnAliasTextBox                      = New-Object system.Windows.Forms.TextBox
 $DeleteAnAliasTextBox.multiline            = $false
 $DeleteAnAliasTextBox.Size                 = new-object System.Drawing.Size(200,20)
-$DeleteAnAliasTextBox.location             = New-Object System.Drawing.Point(175,245)
+$DeleteAnAliasTextBox.location             = New-Object System.Drawing.Point(175,295)
 $DeleteAnAliasTextBox.Font                 = 'Microsoft Sans Serif,10'
 
 $DeleteAnAliasButton                       = new-object System.Windows.Forms.Button
-$DeleteAnAliasButton.Location              = new-object System.Drawing.Size(380,244)
+$DeleteAnAliasButton.Location              = new-object System.Drawing.Size(380,294)
 $DeleteAnAliasButton.Size                  = new-object System.Drawing.Size(150,25)
 $DeleteAnAliasButton.Text                  = $str013
 $DeleteAnAliasButton.Add_Click({DeletAlias})
@@ -140,14 +150,14 @@ $result.width                              = 500
 $result.Size                               = new-object System.Drawing.Size(500,250)
 $result.ScrollBars                         = 'Both'
 $result.TabIndex                           = 1
-$result.location                           = New-Object System.Drawing.Point(30,300)
+$result.location                           = New-Object System.Drawing.Point(30,350)
 $result.BackColor                          = [System.Drawing.Color]::FromArgb(245,245,220)
 $result.text                               = ""
 $result.Font                               = 'Microsoft Sans Serif,10'
 $form.Controls.Add($result)
 
 $closeButton                              = new-object System.Windows.Forms.Button
-$closeButton.Location                     = new-object System.Drawing.Size(30,600)
+$closeButton.Location                     = new-object System.Drawing.Size(30,650)
 $closeButton.Size                         = new-object System.Drawing.Size(100,40)
 $closeButton.Text                         = $str020
 $closeButton.Add_Click({$Form.Close()})
@@ -185,7 +195,7 @@ function Search()
 { 
     $global:Hidden_From_GAL = $null
     $global:Aliasses = @()
-    if ( $UserNameTextBox.Text)
+    if ($UserNameTextBox.Text)
     {
         try
         {
@@ -197,9 +207,17 @@ function Search()
             $global:DN = get-aduser $UserNameTextBox.Text | Select-Object -ExpandProperty DistinguishedName
             $global:Hidden_From_GAL = Get-ADObject $global:DN -Property msexchhidefromaddresslists | Select-Object -ExpandProperty msexchhidefromaddresslists
                        
-            Hidden_CheckBox
-            EmailAddresses
-            ShowResults
+           
+            #If the Proxyadresses attribute is empty, add SMTP address
+           if ($global:User.proxyAddresses.length -eq $null)
+           {
+                $global:User.proxyAddresses.add("SMTP:" + $global:User.UserPrincipalName)
+                Set-ADUser -instance $global:User
+           }
+           
+           Hidden_CheckBox
+           EmailAddresses
+           ShowResults
         }
         Catch
         {
@@ -214,15 +232,24 @@ function Search()
 
 function EmailAddresses ()
 {
-    $smtp_addresses = Get-ADuser $UserNameTextBox.Text -Properties proxyAddresses |  Select-Object @{L = "ProxyAddresses"; E = { ($_.ProxyAddresses -clike 'smtp:*')}}
-    ForEach ($smtp_address In $smtp_addresses)
+    try
     {
-        ForEach ($proxyAddress in $smtp_address.proxyAddresses)
-        {
-            $alias_address = $proxyAddress.split(":")
-            $global:Aliasses += $alias_address[1]      
-        }
+        $smtp_addresses = Get-ADuser $UserNameTextBox.Text -Properties proxyAddresses |  Select-Object @{L = "ProxyAddresses"; E = { ($_.ProxyAddresses -clike 'smtp:*')}}
+           ForEach ($smtp_address In $smtp_addresses)
+           {
+                ForEach ($proxyAddress in $smtp_address.proxyAddresses)
+                {
+                    $alias_address = $proxyAddress.split(":")
+                    $global:Aliasses += $alias_address[1]      
+                }
+            }
     }
+    catch
+    {
+        $global:User.proxyAddresses.add("SMTP:" + $PrimaryEmailAddressTextBox.Text)
+        Set-ADUser -instance $global:User
+    }
+
 }
 
 function ShowResults()
@@ -255,6 +282,7 @@ function Hidden_CheckBox()
     $form.Controls.Add($DeleteAnAlias)
     $form.Controls.Add($DeleteAnAliasTextBox)
     $form.Controls.Add($DeleteAnAliasButton)
+    $form.Controls.Add($365_UPN_Button_Checkbox)
 
     $checkbox1.Checked = $false
     if($global:Hidden_From_GAL -eq "True")
@@ -286,6 +314,13 @@ function SetPrimaryEmail ()
     #Check if the new promary alias already existing
     if ($global:Primary_Display -notlike $PrimaryEmailAddressTextBox.Text)
     {
+        if ($365_UPN_Button_Checkbox.Checked)
+        {
+            $Old_UPN = get-aduser $UserNameTextBox.Text | Select-Object -ExpandProperty UserPrincipalName
+            connect-msolservice
+            Set-MsolUserPrincipalName -UserPrincipalName $Old_UPN -NewUserPrincipalName $PrimaryEmailAddressTextBox.Text
+        }
+
         if ($global:Aliasses -match $PrimaryEmailAddressTextBox.Text)
         {
             # Remove the current primary alias
@@ -313,12 +348,13 @@ function SetPrimaryEmail ()
             $global:User.proxyAddresses.add("SMTP:" + $PrimaryEmailAddressTextBox.Text)
             Set-ADUser -instance $global:User
         }
-    search
+        search
     }
     else
     {
         $MsgBoxError::Show($str014, $str001, "OK", "Error")
     }
+
 }
 
 function AddNewAlias ()
